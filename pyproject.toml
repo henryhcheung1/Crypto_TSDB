@@ -1,0 +1,15 @@
+[tool.poetry]
+name = " Crypto_TSDB"
+version = "0.1.0"
+description = ""
+authors = ["henryhcheung1 <henryhcheung1@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+pycoingecko = "^2.2.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
