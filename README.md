@@ -20,3 +20,10 @@ docker-compose down
 
 1. Setup monitoring with Prometheus & Grafana dashboards
 2. Investigate Promscale
+3. Deploy into Kubernetes
+4. Cronjob for fetching crypto data
+
+
+### References:
+
+https://docs.timescale.com/timescaledb/latest/tutorials/analyze-cryptocurrency-data/#set-up-the-schema
