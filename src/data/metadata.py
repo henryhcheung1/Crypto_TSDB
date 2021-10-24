@@ -1,4 +1,4 @@
 
-class Cryptometa:
+class Metadata:
 
     symbols = ['btc', 'eth']

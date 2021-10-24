@@ -11,6 +11,7 @@ def cli(ctx):
 
     ctx.obj['config'] = Config()
     # ctx.obj['crypto'] = Crypto()
+    
 
 
 @click.command()
