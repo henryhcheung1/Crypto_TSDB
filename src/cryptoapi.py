@@ -9,14 +9,16 @@ import os
 # To obtain intra day measurements (e.g. measurement intervals of 15 minutes), need to hit API directly
 # https://www.alphavantage.co/documentation/#crypto-intraday
 
-class Cryptomarket:
+class CryptoAPI:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
 
         self.output_format = 'pandas' # or json
 
-    def fetch_daily_between(self, symbol: str, start_date: str, end_date: str, market: str='USD'):
+    def fetch_data_between(self, symbol: str, start_date: str, end_date: str, market: str='USD'):
+
+        # NOTE: Currently this fetches only daily prices. Will add weekly, monthly, and intraday
         
         # check if symbol is valid
 
@@ -25,14 +27,11 @@ class Cryptomarket:
         validate_date(end_date)
 
         cc = CryptoCurrencies(key=self.api_key, output_format=self.output_format)
-        data, meta_data = cc.get_digital_currency_daily(symbol=symbol, market=market)
+        data, _ = cc.get_digital_currency_daily(symbol=symbol, market=market)
 
         # select range of dates
         result = data[start_date:end_date]
-
-        print(result[self.__get_desired_columns(market)])
-
-        return result[self.__get_desired_columns(market)], meta_data
+        return result[self.__get_desired_columns(market)]
 
     def __get_desired_columns(self, market: str) -> list:
         # Alpha Vantage API specific column headers
@@ -47,7 +46,7 @@ if __name__ == '__main__':
 
     pp = pprint.PrettyPrinter(indent=2)
 
-    cc = Cryptomarket(os.environ['API_KEY'])
+    cc = CryptoAPI(os.environ['API_KEY'])
 
     symbol = 'btc'
 

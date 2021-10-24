@@ -27,3 +27,4 @@ docker-compose down
 3. Deploy into Kubernetes
 4. Cronjob for fetching crypto data
 5. Setup Kafka 
+6. Add logging
