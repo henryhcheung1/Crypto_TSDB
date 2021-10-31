@@ -1,6 +1,13 @@
+from helper import (
+    validate_date,
+    validate_intraday_interval
+)
+from data.metadata import Metadata as meta
+
+
 from alpha_vantage.cryptocurrencies import CryptoCurrencies
-from helper import validate_date
-# import matplotlib.pyplot as plt
+import requests
+import json
 
 import pprint
 import os
@@ -33,6 +40,25 @@ class CryptoAPI:
         result = data[start_date:end_date]
         return result[self.__get_desired_columns(market)]
 
+
+
+    def fetch_intraday_data(self, symbol: str, interval: str, market: str='USD'):
+        # Alpha vantage Python bindings currently do not support intraday, therefore required to call alpha vantage endpoints directly
+
+        validate_intraday_interval(interval)
+
+        url = f"https://www.alphavantage.co/query?function={meta.API_NAME}&symbol={symbol}&market={market}&interval={interval}&apikey={self.api_key}"
+
+        try:
+            resp = requests.get(url)
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            print(err)
+
+        return resp
+
+                    
+
     def __get_desired_columns(self, market: str) -> list:
         # Alpha Vantage API specific column headers
 
@@ -49,14 +75,19 @@ if __name__ == '__main__':
     cc = CryptoAPI(os.environ['API_KEY'])
 
     symbol = 'btc'
+    interval = '5min'
 
-    data, meta_data = cc.fetch_daily_between(symbol=symbol, start_date="2021-9-18", end_date="2021-10-22")
+    # data, meta_data = cc.fetch_daily_between(symbol=symbol, start_date="2021-9-18", end_date="2021-10-22")
 
-    pp.pprint(data)
-    pp.pprint(meta_data)
-    pp.pprint(data.columns)
-    pp.pprint(data.head())
+    # pp.pprint(data)
+    # pp.pprint(meta_data)
+    # pp.pprint(data.columns)
+    # pp.pprint(data.head())
 
+    response = cc.fetch_intraday_data(symbol=symbol, interval=interval)
+    print(response)
+
+    print(response.text)
 
 
 
