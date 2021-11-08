@@ -1,16 +1,17 @@
-from helper import (
-    validate_date,
-    validate_intraday_interval
-)
+from helper.helper import validate_date
+
 from data.metadata import Metadata as meta
 
 
 from alpha_vantage.cryptocurrencies import CryptoCurrencies
 import requests
 import json
+import logging
 
 import pprint
 import os
+
+log = logging.getLogger(__name__)
 
 # Notes: Alpha Vantage API Python bindings currently doesnt provide intra day measurements. 
 # To obtain intra day measurements (e.g. measurement intervals of 15 minutes), need to hit API directly
@@ -22,16 +23,15 @@ class CryptoAPI:
         self.api_key = api_key
 
         self.output_format = 'pandas' # or json
+        self.outputsize = 'full' # or compact
 
     def fetch_data_between(self, symbol: str, start_date: str, end_date: str, market: str='USD'):
-
-        # NOTE: Currently this fetches only daily prices. Will add weekly, monthly, and intraday
         
-        # check if symbol is valid
-
         # check dates are valid
         validate_date(start_date)
         validate_date(end_date)
+
+        log.info(f"Fetching {symbol} between {start_date} and {end_date} at {interval} intervals")
 
         cc = CryptoCurrencies(key=self.api_key, output_format=self.output_format)
         data, _ = cc.get_digital_currency_daily(symbol=symbol, market=market)
@@ -45,17 +45,19 @@ class CryptoAPI:
     def fetch_intraday_data(self, symbol: str, interval: str, market: str='USD'):
         # Alpha vantage Python bindings currently do not support intraday, therefore required to call alpha vantage endpoints directly
 
-        validate_intraday_interval(interval)
+        url = f"https://www.alphavantage.co/query?function={meta.API_NAME}&symbol={symbol}&market={market}&interval={interval}&apikey={self.api_key}&outputsize={self.outputsize}"
 
-        url = f"https://www.alphavantage.co/query?function={meta.API_NAME}&symbol={symbol}&market={market}&interval={interval}&apikey={self.api_key}"
+        log.info(f"Fetching {symbol} at {interval} intervals")
 
         try:
-            resp = requests.get(url)
-            resp.raise_for_status()
+            response = requests.get(url)
+            response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            print(err)
+            raise ValueError(f"HTTP Error, {err}")
 
-        return resp
+        json_response = json.loads(response.text)
+
+        return json_response
 
                     
 
@@ -85,19 +87,6 @@ if __name__ == '__main__':
     # pp.pprint(data.head())
 
     response = cc.fetch_intraday_data(symbol=symbol, interval=interval)
-    print(response)
+    pprint.pprint(response)
 
-    print(response.text)
-
-
-
-
-# cc = CryptoCurrencies(key=config.API_KEY, output_format='pandas')
-
-# data, meta_data = cc.get_digital_currency_daily(symbol='BTC', market='CNY')
-
-# data, meta_data = cc.get_digital_currency_exchange_rate(from_currency='BTC', to_currency='USD')
-# pp.pprint(data)
-# pp.pprint(meta_data)
-# pp.pprint(data.columns)
-# pp.pprint(data.head())
+    # print(response.text)

@@ -1,6 +1,15 @@
 from data.config import Config
 from cryptoapi import CryptoAPI
 from tsdb import TSDB
+from data.metadata import Metadata as meta
+from helper.helper import is_valid_symbol
+
+import logging
+
+import pprint
+
+
+log = logging.getLogger(__name__)
 
 class CryptoDB:
 
@@ -10,16 +19,37 @@ class CryptoDB:
         self.crypto_api = CryptoAPI(config.API_KEY)
 
 
-    def pull_data(self, symbol: str, start_date: str, end_date: str, store_tsdb=False):
+    def pull_data(self, symbol: str, start_date: str, end_date: str, interval: str, store_tsdb=False):
         """
         Fetch data from Crypto API, filter between start and end date ranges and optionally store in TSDB
         """
 
-        data = self.crypto_api.fetch_data_between(symbol=symbol, start_date=start_date, end_date=end_date)
+        log.info(f"Fetching cryptocurrency prices")
 
-        print(data)
+        # validate symbol
+        if not is_valid_symbol(symbol):
+            # invalid symbol
+            raise ValueError(f"Unrecognized cryptocurrency symbol: {symbol}. List of recognized cryptocurrency symbols: {meta.symbols}")
+
+        # validate interval
+        if interval in meta.time_intervals:
+            # fetch from daily, weekly, monthly API
+            data = self.crypto_api.fetch_data_between(symbol=symbol, start_date=start_date, end_date=end_date)
+
+        elif interval in meta.intraday_intervals:
+            # fetch from intraday API
+            data = self.crypto_api.fetch_intraday_data(symbol=symbol, interval=interval)
+
+        else:
+            # invalid interval
+            raise ValueError(f"Invalid interval provided: {interval}")
+
+
+        pprint.pprint(data)
+
 
         ## Store into TSDB here
+        # NOTE: avoid rewriting to DB if time period already exists
 
 
 
