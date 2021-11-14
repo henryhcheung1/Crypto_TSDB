@@ -28,9 +28,7 @@ class CryptoAPI:
         # check dates are valid
         validate_datetimes(start_time, end_time)
 
-
         log.info(f"Fetching {symbol} at {interval} intervals")
-
 
         cc = CryptoCurrencies(key=self.api_key, output_format=self.output_format)
 
@@ -56,15 +54,31 @@ class CryptoAPI:
 
 
 
-    def fetch_intraday_data(self, symbol: str, start_time: str, end_time: str, interval: str, market: str='USD'):
+    def fetch_intraday_data(self, symbol: str, start_date: str, end_date: str, start_time: str, end_time: str, interval: str, market: str='USD'):
         # Alpha vantage Python bindings currently do not support intraday, therefore required to call alpha vantage endpoints directly
 
         # validate time range
-        validate_datetimes(start_time, end_time, check_date=False)
+        # start_datetime = f"{start_date} {start_time}" if start_date is not None and start_time is not None else None
+        # end_datetime = f"{end_date} {end_time}" if end_date is not None and end_time is not None else None
 
-        url = f"https://www.alphavantage.co/query?function={meta.API_NAME}&symbol={symbol}&market={market}&interval={interval}&apikey={self.api_key}&outputsize={self.outputsize}"
+        # validate_datetimes(start_datetime, end_datetime, check_time=True)
 
         log.info(f"Fetching {symbol} at {interval} intervals")
+
+        start_datetime = None
+        end_datetime = None
+        if [start_date, start_time, end_date, end_time].count(None) == 0:
+            # all starting and ending date ranges specified
+            start_datetime = f"{start_date} {start_time}" 
+            end_datetime = f"{end_date} {end_time}"
+
+            log.info(f"Between {start_datetime} - {end_datetime} date ranges")
+
+
+        validate_datetimes(start_datetime, end_datetime, check_time=True)
+
+
+        url = f"https://www.alphavantage.co/query?function={meta.API_NAME}&symbol={symbol}&market={market}&interval={interval}&apikey={self.api_key}&outputsize={self.outputsize}"
 
         try:
             response = requests.get(url)
@@ -73,6 +87,10 @@ class CryptoAPI:
             raise ValueError(f"HTTP Error, {err}")
 
         json_response = json.loads(response.text)
+
+        # filter time range
+
+        # store into dataframe
 
         return json_response
 
