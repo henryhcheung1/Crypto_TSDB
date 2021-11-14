@@ -1,7 +1,5 @@
-from helper.helper import validate_date
-
+from helper.helper import validate_datetimes
 from data.metadata import Metadata as meta
-
 
 from alpha_vantage.cryptocurrencies import CryptoCurrencies
 import requests
@@ -25,25 +23,44 @@ class CryptoAPI:
         self.output_format = 'pandas' # or json
         self.outputsize = 'full' # or compact
 
-    def fetch_data_between(self, symbol: str, start_date: str, end_date: str, market: str='USD'):
+    def fetch_data_between(self, symbol: str, start_time: str, end_time: str, interval: str, market: str='USD'):
         
         # check dates are valid
-        validate_date(start_date)
-        validate_date(end_date)
+        validate_datetimes(start_time, end_time)
 
-        log.info(f"Fetching {symbol} between {start_date} and {end_date} at {interval} intervals")
+
+        log.info(f"Fetching {symbol} at {interval} intervals")
+
 
         cc = CryptoCurrencies(key=self.api_key, output_format=self.output_format)
-        data, _ = cc.get_digital_currency_daily(symbol=symbol, market=market)
 
-        # select range of dates
-        result = data[start_date:end_date]
-        return result[self.__get_desired_columns(market)]
+        # Call appropriate time interval API
+        data = None
+        if interval == meta.DAILY:
+            data, _ = cc.get_digital_currency_daily(symbol=symbol, market=market)
+
+        elif interval == meta.WEEKLY:
+            data, _ = cc.get_digital_currency_weekly(symbol=symbol, market=market)
+
+        elif interval == meta.MONTHLY:
+            data, _ = cc.get_digital_currency_monthly(symbol=symbol, market=market)
+
+
+        if start_time is not None and end_time is not None:
+            # filter data between range of dates
+
+            log.info(f"Filtering dates between {start_time} and {end_time}")
+            data = data[start_time:end_time]
+
+        return data[self.__get_desired_columns(market)]
 
 
 
-    def fetch_intraday_data(self, symbol: str, interval: str, market: str='USD'):
+    def fetch_intraday_data(self, symbol: str, start_time: str, end_time: str, interval: str, market: str='USD'):
         # Alpha vantage Python bindings currently do not support intraday, therefore required to call alpha vantage endpoints directly
+
+        # validate time range
+        validate_datetimes(start_time, end_time, check_date=False)
 
         url = f"https://www.alphavantage.co/query?function={meta.API_NAME}&symbol={symbol}&market={market}&interval={interval}&apikey={self.api_key}&outputsize={self.outputsize}"
 
@@ -59,7 +76,7 @@ class CryptoAPI:
 
         return json_response
 
-                    
+
 
     def __get_desired_columns(self, market: str) -> list:
         # Alpha Vantage API specific column headers
@@ -67,6 +84,15 @@ class CryptoAPI:
         return [f"1a. open ({market})", f"2a. high ({market})",
        f"3a. low ({market})", f"4a. close ({market})",
        '5. volume', '6. market cap (USD)']
+
+
+    # def __filter_date(self, data: , start_time: str, end_time: str):
+
+    #     if start_time is not None and end_time is not None:
+    #         # filter data between range of dates
+
+    #         log.info(f"Filtering dates between {start_time} and {end_time}")
+    #         data = data[start_time:end_time]
        
 
 
