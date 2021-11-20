@@ -5,6 +5,7 @@ from alpha_vantage.cryptocurrencies import CryptoCurrencies
 import requests
 import json
 import logging
+from pycoingecko import CoinGeckoAPI
 
 import pprint
 import os
@@ -23,6 +24,10 @@ class CryptoAPI:
         self.output_format = 'pandas' # or json
         self.outputsize = 'full' # or compact
 
+        self.cg = CoinGeckoAPI()
+        self.cc = CryptoCurrencies(key=self.api_key, output_format=self.output_format)
+
+
     def fetch_data_between(self, symbol: str, start_time: str, end_time: str, interval: str, market: str='USD'):
         
         # check dates are valid
@@ -30,18 +35,17 @@ class CryptoAPI:
 
         log.info(f"Fetching {symbol} at {interval} intervals")
 
-        cc = CryptoCurrencies(key=self.api_key, output_format=self.output_format)
 
         # Call appropriate time interval API
         data = None
         if interval == meta.DAILY:
-            data, _ = cc.get_digital_currency_daily(symbol=symbol, market=market)
+            data, _ = self.cc.get_digital_currency_daily(symbol=symbol, market=market)
 
         elif interval == meta.WEEKLY:
-            data, _ = cc.get_digital_currency_weekly(symbol=symbol, market=market)
+            data, _ = self.cc.get_digital_currency_weekly(symbol=symbol, market=market)
 
         elif interval == meta.MONTHLY:
-            data, _ = cc.get_digital_currency_monthly(symbol=symbol, market=market)
+            data, _ = self.cc.get_digital_currency_monthly(symbol=symbol, market=market)
 
 
         if start_time is not None and end_time is not None:
@@ -90,9 +94,33 @@ class CryptoAPI:
 
         # filter time range
 
+
+        # resposne_metadata = json_response['Meta Data']
+
+        data = json_response[f"Time Series Crypto ({interval})"]
+
+
+        for timestamp in data:
+            for fields in data[timestamp]:
+                # print(timestamp)
+                # print(data[timestamp][fields])
+                print(data[timestamp])
+                
+
         # store into dataframe
 
         return json_response
+
+
+    def fetch_crypto_symbols(self):
+        """
+        Returns all crypto currency names and tickers
+        """
+        #: NOTE: would like the database to be updated whenever a new cryptocurrency comes out, 
+        # either via even driven or fetched periodically 
+
+        all_coin_symbols = self.cg.get_coins_list()
+        return all_coin_symbols
 
 
 
@@ -111,6 +139,7 @@ class CryptoAPI:
 
     #         log.info(f"Filtering dates between {start_time} and {end_time}")
     #         data = data[start_time:end_time]
+
        
 
 

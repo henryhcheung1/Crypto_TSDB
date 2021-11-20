@@ -54,7 +54,21 @@ class CryptoDB:
             raise ValueError(f"Invalid interval provided: {interval}")
 
 
-        pprint.pprint(data)
+        def pull_symbols(self, store_tsdb: bool=False):
+            """
+            Retrieves all current cryptocurrency tickers and writes them to the database, ignoring duplicates.
+            """
+
+            self.crypto_api.fetch_crypto_symbols
+
+
+            if store_tsdb is True:
+
+                
+
+
+
+        # pprint.pprint(data)
 
 
         ## Store into TSDB here
