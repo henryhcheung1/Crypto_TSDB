@@ -1,6 +1,8 @@
 
 class Metadata:
 
+    DRIVER = 'postgresql' # DB driver in connection string
+
     DAILY = 'daily'
     WEEKLY = 'weekly'
     MONTHLY = 'monthly'

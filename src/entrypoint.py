@@ -30,7 +30,19 @@ def pull_data(ctx, symbol: str, start_date: str, end_date: str, start_time: str,
         store_tsdb=store
     )
 
+
+@click.command()
+@click.pass_context
+@click.option('--store', '-t', default=False, help='Persist collected metrics into backend TSDB')
+def pull_symbols(ctx, store: bool):
+
+    ctx.obj['cryptodb'].pull_symbols(
+        store_tsdb=store
+    )
+
+
 cli.add_command(pull_data)
+cli.add_command(pull_symbols)
 
 if __name__ == '__main__':
     cli()

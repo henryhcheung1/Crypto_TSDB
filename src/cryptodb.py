@@ -18,6 +18,15 @@ class CryptoDB:
         self.config = config
         self.crypto_api = CryptoAPI(config.API_KEY)
 
+        self.tsdb = TSDB(
+            driver=meta.DRIVER,
+            username=Config.DB_USER,
+            password=Config.DB_PASS,
+            hostname=Config.DB_HOST,
+            port=Config.DB_PORT,
+            database=Config.DB_NAME
+        )
+
 
     def pull_data(self, symbol: str, start_date: str, end_date: str, start_time: str, end_time: str, interval: str, store_tsdb: bool=False):
         """
@@ -54,15 +63,28 @@ class CryptoDB:
             raise ValueError(f"Invalid interval provided: {interval}")
 
 
-        def pull_symbols(self, store_tsdb: bool=False):
-            """
-            Retrieves all current cryptocurrency tickers and writes them to the database, ignoring duplicates.
-            """
+    def pull_symbols(self, store_tsdb: bool=False):
+        """
+        Retrieves all current cryptocurrency tickers and writes them to the database, ignoring duplicates.
+        """
 
-            self.crypto_api.fetch_crypto_symbols
+        all_crypto_symbols = self.crypto_api.fetch_crypto_symbols()
+
+        filtered_symbols = self.__filter_symbols(all_crypto_symbols)
+
+        if store_tsdb is True:
+            
+            pass
+
+        # pprint.pprint(filtered_symbols)
 
 
-            if store_tsdb is True:
+
+    def __filter_symbols(self, symbols: list):
+
+        return [{'id': record['id'], 'symbol': record['symbol']} for record in symbols]
+
+
 
                 
 
@@ -73,6 +95,4 @@ class CryptoDB:
 
         ## Store into TSDB here
         # NOTE: avoid rewriting to DB if time period already exists
-
-
 

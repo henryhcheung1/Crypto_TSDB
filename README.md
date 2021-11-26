@@ -23,7 +23,7 @@ docker-compose down
 ### TODO:
 
 1. Setup monitoring with Prometheus & Grafana dashboards
-2. Investigate Promscale
+2. Investigate Promscale, Alembic data migrations, 
 3. Deploy into Kubernetes
 4. Cronjob for fetching crypto data
 5. Setup Kafka 
